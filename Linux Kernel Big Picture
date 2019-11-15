@@ -293,6 +293,81 @@ state to TASK_RUNNING .The process also awakes prematurely and becomes runnable
 if it receives a signal.
 
 
+3)TASK_UNINTERRUPTIBLE —This state is identical to TASK_INTERRUPTIBLE except
+that it does not wake up and become runnable if it receives a signal.This is used in
+situations where the process must wait without interruption or when the event is
+expected to occur quite quickly. Because the task does not respond to signals in
+this state, TASK_UNINTERRUPTIBLE is less often used than TASK_INTERRUPTIBLE
+
+4)__TASK_TRACED —The process is being traced by another process, such as a debug-
+ger, via ptrace.
+
+5)__TASK_STOPPED —Process execution has stopped; the task is not running nor is it
+eligible to run.This occurs if the task receives the SIGSTOP , SIGTSTP , SIGTTIN , or
+SIGTTOU signal or if it receives any signal while it is being debugged.
+
+Kernel code often needs to change a process’s state.The preferred mechanism is using
+set_task_state(task, state);
+/* set task ‘task’ to state ‘state’ */
+This function sets the given task to the given state. If applicable, it also provides a
+memory barrier to force ordering on other processors. (This is only needed on SMP sys-
+tems.) Otherwise, it is equivalent to
+task->state = state;
+
+System calls and exception handlers are well-defined interfaces into the kernel.A
+process can begin executing in kernel-space only through one of these interfaces—all
+access to the kernel is through these interfaces.
+
+$$$Process Family Tree
+--->All processes are descendants of the init process, whose PID is one.The kernel starts
+init in the last step of the boot process.The init process, in turn, reads the system
+initscripts and executes more programs, eventually completing the boot process.
+
+Consequently, give the current process, it is possible to obtain the process
+descriptor of its parent with the following code:
+
+/* struct task_struct *my_parent = current->parent;   */
+
+In fact, you can follow the process hierarchy from any one process in the system to any
+other. Oftentimes, however, it is desirable simply to iterate over all processes in the system.
+This is easy because the task list is a circular, doubly linked list.
+
+$$$Copy-on-Write
+Traditionally, upon fork(), all resources owned by the parent are duplicated and the
+copy is given to the child.This approach is naive and inefficient in that it copies much
+data that might otherwise be shared.Worse still, if the new process were to immediately
+execute a new image, all that copying would go to waste. In Linux, fork() is imple-
+mented through the use of copy-on-write pages. Copy-on-write (or COW) is a technique
+to delay or altogether prevent copying of the data. Rather than duplicate the process
+address space, the parent and the child can share a single copy.
+
+The data, however, is marked in such a way that if it is written to, a duplicate is made
+and each process receives a unique copy. Consequently, the duplication of resources
+occurs only when they are written; until then, they are shared read-only.This technique
+delays the copying of each page in the address space until it is actually written to. In the
+case that the pages are never written—for example, if exec() is called immediately after
+fork() —they never need to be copied.
+
+The only overhead incurred by fork() is the duplication of the parent’s page tables
+and the creation of a unique process descriptor for the child. In the common case that a
+process executes a new executable image immediately after forking, this optimization pre-
+vents the wasted copying of large amounts of data.
+
+$$$The Linux Implementation of Threads
+--->Linux has a unique implementation of threads.To the Linux kernel, there is no concept of a thread. 
+Linux implements all threads as standard processes.
+ The Linux Kernel does not provide any special scheduling semantics or data structures to represent threads.
+-->Each thread has a unique task_struct and appears to the kernel as a normal process
+
+-->For example, assume you have a process that consists of four
+threads. On systems with explicit thread support, one process descriptor might exist that,
+in turn, points to the four different threads.The process descriptor describes the shared
+resources, such as an address space or open files.The threads then describe the resources
+they alone possess. Conversely, in Linux, there are simply four processes and thus four
+normal task_struct structures.The four processes are set up to share certain resources.
+
+
+
 
 
 
