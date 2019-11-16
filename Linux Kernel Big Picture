@@ -388,7 +388,24 @@ which kernel creates thread.
 
 $$Kernel threads vs User Threads
 
--->
+-->User threads and Kernel threads are exactly the same. (You can see by looking in /proc/ and see that the kernel threads are there too.)
+
+-->A User thread is one that executes user-space code. But it can call into kernel space at any time. It's still considered a "User" thread, even though it's executing kernel code at elevated security levels.
+
+-->A Kernel thread is one that only runs kernel code and isn't associated with a user-space process. These are like "UNIX daemons", except they are kernel-only daemons. So you could say that the kernel is a multi-threaded program. For example, there is a kernel thread for swap. This forces all swap issues to get "serialized" into a single stream.
+
+-->If a user thread needs something, it will call into the kernel, which marks that thread as sleeping. Later, the swap thread finds the data, so it marks the user thread as runnable. Later still, the "user thread" returns from the kernel back to userland as if nothing happened.
+
+-->In fact, all threads start off in kernel space, because the clone() operation happens in kernel space. (And there's lots of kernel accounting to do before you can 'return' to a new process in user space.)
+
+$$Process Termination
+
+-->When a process terminates, the kernel releases
+the resources owned by the process and notifies the child’s parent of its demise.
+-->Generally, process destruction is self-induced. It occurs when the process calls the
+exit() system call, either explicitly when it is ready to terminate or implicitly on return
+from the main subroutine of any program. (That is, the C compiler places a call to exit()
+after main() returns.) A process can also terminate involuntarily.This occurs when process receives a signal or exception it cannot handle or ignore. Regardless of how a process terminates, the bulk of the work is handled by do_exit() , defined in kernel/exit.c , which completes a number of chores:
 
 
 
