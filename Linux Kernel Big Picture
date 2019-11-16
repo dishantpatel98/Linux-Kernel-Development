@@ -408,9 +408,70 @@ from the main subroutine of any program. (That is, the C compiler places a call 
 after main() returns.) A process can also terminate involuntarily.This occurs when process receives a signal or exception it cannot handle or ignore. Regardless of how a process terminates, the bulk of the work is handled by do_exit() , defined in kernel/exit.c , which completes a number of chores:
 
 
+-----------------------------------------------------------------------------------------------------
+$$$ System Calls
+-->
+In any modern operating system, the kernel provides a set of interfaces by which
+running in user-space can interact with the system.These interfaces give appli-
+cations controlled access to hardware, a mechanism with which to create new processes
+and communicate with existing ones, and the capability to request other operating system
+resources.The interfaces act as the messengers between applications and the kernel, with
+the applications issuing various requests and the kernel fulfilling them (or returning an
+error).The existence of these interfaces, and the fact that applications are not free to
+directly do whatever they want, is key to providing a stable system.
 
 
+###Communicating with the Kernel
+-->System calls provide a layer between the hardware and user-space processes.This layer
+serves three primary purposes.
+
+1)First, it provides an abstracted hardware interface for user-
+space.When reading or writing from a file, for example, applications are not concerned
+with the type of disk, media, or even the type of filesystem on which the file resides.
+
+2)Second, system calls ensure system security and stability.With the kernel acting as a middle-
+man between system resources and user-space, the kernel can arbitrate access based on
+permissions, users, and other criteria.For example, this arbitration prevents applications
+from incorrectly using hardware, stealing other processes’ resources, or otherwise doing
+harm to the system.
+
+3)In Linux, system calls are the only means user-space has of interfacing with the kernel; they are the only
+legal entry point into the kernel other than exceptions and traps.
 
 
+###APIs, POSIX, and the C Library
 
+-->Typically, applications are programmed against an Application Programming Interface
+(API) implemented in user-space, not directly to system calls.This is important because
+no direct correlation is needed between the interfaces that applications make use of and
+the actual interface provided by the kernel.An API defines a set of programming inter-
+faces used by applications.Those interfaces can be implemented as a system call, imple-
+mented through multiple system calls, or implemented without the use of system calls at
+all.The same API can exist on multiple systems and provide the same interface to applica-
+tions while the implementation of the API itself can differ greatly from system to system.
 
+-->One of the more common application programming interfaces in the Unix world is
+based on the POSIX standard.
+-->POSIX is an excellent example of the relationship between APIs and system calls. On
+most Unix systems, the POSIX-defined API calls have a strong correlation to the system
+calls.
+
+-------->There are about 335 system calls are on x86. (Each architecture is allowed to define unique system
+calls.) Although not all operating systems publish their exact system calls, some operating systems are
+estimated to have more than one thousand. In the previous edition of this book, x86 had only 250 sys-
+tem calls.
+
+How system calls are implemented?
+-->A single system call invocation in assembler language is usually multiple lines of code. First the parameters for the system call are loaded in appropriate processor registers and/or to the stack, and then a special instruction like int 0x80 or syscall is used to actually make the system call.
+
+--> On Unix-like systems, that API is usually part of an implementation of the C library (libc), such as glibc, that provides wrapper functions for the system calls, often named the same as the system calls they invoke. 
+
+--> The library's wrapper functions expose an ordinary function calling convention (a subroutine call on the assembly level) for using the system call, as well as making the system call more modular. Here, the primary function of the wrapper is to place all the arguments to be passed to the system call in the appropriate processor registers (and maybe on the call stack as well), and also setting a unique system call number for the kernel to call. In this way the library, which exists between the OS and the application, increases portability. 
+
+--> call to the library function itself does not cause a switch to kernel mode (if the execution was not already in kernel mode) and is usually a normal subroutine call (using, for example, a "CALL" assembly instruction in some Instruction set architectures (ISAs)). The actual system call does transfer control to the kernel (and is more implementation-dependent and platform-dependent than the library call abstracting it). For example, in Unix-like systems, fork and execve are C library functions that in turn execute instructions that invoke the fork and exec system calls.
+
+-->Making the system call directly in the application code is more complicated and may require embedded assembly code to be used (in C and C++) as well as knowledge of the low-level binary interface for the system call operation, which may be subject to change over time and thus not be part of the application binary interface; the library functions are meant to abstract this away. 
+
+-->Implementing system calls requires a transfer of control from user space to kernel space, which involves some sort of architecture-specific feature. A typical way to implement this is to use a software interrupt or trap. Interrupts transfer control to the operating system kernel, so software simply needs to set up some register with the system call number needed, and execute the software interrupt. 
+
+-->The C library additionally provides the majority of the POSIX API.
