@@ -606,4 +606,9 @@ syscall should have exactly one purpose. Multiplexing syscalls (a single system 
 does wildly different things depending on a flag argument) is discouraged in Linux. Look
 at ioctl() as an example of what not to do.
 
--->
+-->What are the new system call’s arguments, return value, and error codes? The system
+call should have a clean and simple interface with the smallest number of arguments possi-
+ble.The semantics and behavior of a system call are important; they must not change,
+because existing applications will come to rely on them.
+
+
