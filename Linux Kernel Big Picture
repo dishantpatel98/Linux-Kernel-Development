@@ -179,6 +179,8 @@ The gcc C compiler enables the embedding of assembly instructions in otherwise n
 C functions.This feature, of course, is used in only those parts of the kernel that are
 unique to a given system architecture.
 
+
+
 ###Inline Assembly
 -->an inline assembler is a feature of some compilers that allows low-level code written in assembly language to be embedded within a program, among code that otherwise has been compiled from a higher-level language such as C or Ada. 
 The asm() compiler directive is used to inline assembly code. For example, this inline
@@ -534,3 +536,53 @@ reality invoke another.
 sys_call_table .This table is architecture; on x86-64 it is defined in
 arch/i386/kernel/syscall_64.c .This table assigns each valid syscall to a unique
 syscall number.
+
+
+###System Call Handler
+
+-->It is not possible for user-space applications to execute kernel code directly.They cannot
+simply make a function call to a method existing in kernel-space because the kernel exists
+in a protected memory space. If applications could directly read and write to the kernel’s
+address space, system security and stability would be nonexistent.
+
+-->Instead, user-space applications must somehow signal to the kernel that they want to
+execute a system call and have the system switch to kernel mode, where the system call
+can be executed in kernel-space by the kernel on behalf of the application.
+
+-->Instead, user-space applications must somehow signal to the kernel that they want to
+execute a system call and have the system switch to kernel mode, where the system call
+can be executed in kernel-space by the kernel on behalf of the application.
+The mechanism to signal the kernel is a software interrupt: Incur an exception, and
+the system will switch to kernel mode and execute the exception handler.The exception
+handler, in this case, is actually the system call handler.The defined software interrupt on
+x86 is interrupt number 128, which is incurred via the int $0x80 instruction. It triggers
+a switch to kernel mode and the execution of exception vector 128, which is the system
+call handler.The system call handler is the aptly named function system_call() . It is
+architecture-dependent; on x86-64 it is implemented in assembly in entry_64.S . 6
+Recently, x86 processors added a feature known as sysenter.This feature provides a faster,
+more specialized way of trapping into a kernel to execute a system call than using the int
+interrupt instruction. Support for this feature was quickly added to the kernel. Regardless
+of how the system call handler is invoked, however, the important notion is that somehow
+user-space causes an exception or trap to enter the kernel.
+
+
+
+##Denoting the Correct System Call
+
+--->Simply entering kernel-space alone is not sufficient because multiple system calls exist, all
+of which enter the kernel in the same manner.Thus, the system call number must be
+passed into the kernel. On x86, the syscall number is fed to the kernel via the eax regis-
+ter. Before causing the trap into the kernel, user-space sticks in eax the number corre-
+sponding to the desired system call.The system call handler then reads the value from
+eax . Other architectures do something similar.
+
+-->The system_call() function checks the validity of the given system call number by
+comparing it to NR_syscalls . If it is larger than or equal to NR_syscalls , the function
+returns -ENOSYS . Otherwise, the specified system call is invoked:
+call *sys_call_table(,%rax,8)
+
+--->Because each element in the system call table is 64 bits (8 bytes), the kernel multiplies
+the given system call number by four to arrive at its location in the system call table. On
+x86-32, the code is similar, with the 8 replaced by 4
+
+-->
