@@ -585,4 +585,25 @@ call *sys_call_table(,%rax,8)
 the given system call number by four to arrive at its location in the system call table. On
 x86-32, the code is similar, with the 8 replaced by 4
 
+-->Refer to Invoking the system call handler and executing a system call.gif
+
+###Parameter Passing
+-->In addition to the system call number, most syscalls require that one or more parameters
+be passed to them. Somehow, user-space must relay the parameters to the kernel during
+the trap.The easiest way to do this is via the same means that the syscall number is passed:
+The parameters are stored in registers. On x86-32, the registers ebx , ecx , edx , esi , and
+edi contain, in order, the first five arguments. In the unlikely case of six or more argu-
+ments, a single register is used to hold a pointer to user-space where all the parameters
+are stored.The return value is sent to user-space also via register. On x86, it is written into the
+eax register
+
+###System Call Implementation
+
+-->Let’s look at the steps involved in writing a new system call for Linux:
+
+--->The first step in implementing a system call is defining its purpose.What will it do? The
+syscall should have exactly one purpose. Multiplexing syscalls (a single system call that
+does wildly different things depending on a flag argument) is discouraged in Linux. Look
+at ioctl() as an example of what not to do.
+
 -->
