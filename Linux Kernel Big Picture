@@ -692,5 +692,10 @@ interrupt controller.
 -->In computing, a programmable interrupt controller (PIC) is a device that is used to combine several sources of interrupt onto one or more CPU lines, while allowing priority levels to be assigned to its interrupt outputs. When the device has multiple interrupt outputs to assert, it asserts them in the order of their relative priority.
 
 
+-->/proc/interrupts file, which is populated with statistics related to interrupts on the system
+
+
+---------------------------------------------------------------------------
+Ch-Bottom Halves of Interrupt 
 
 
