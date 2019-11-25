@@ -71,6 +71,10 @@ Communication within the kernel is trivial because everything runs in kernel mod
 same address space: The kernel can invoke functions directly, as a user-space application
 might. Proponents of this model cite the simplicity and performance of the monolithic
 approach. Most Unix systems are monolithic in design.
+-->A monolithic kernel is one single program that contains all of the code necessary to perform every kernel-related task.
+-->The monolithic Linux kernel can be made extremely small not only because of its ability to dynamically load modules but also because of its ease of customization. In fact, there are some versions that are small enough to fit together with a large number of utilities and other programs on a single floppy disk and still provide a fully functional operating system (one of the most popular of which is muLinux). This ability to miniaturize its kernel has also led to a rapid growth in the use of Linux in embedded systems. 
+
+-->The main disadvantages of monolithic kernels are the dependencies between system components – a bug in a device driver might crash the entire system – and the fact that large kernels can become very difficult to maintain. 
 
 -->Microkernels, on the other hand, are not implemented as a single large process. Instead,
 the functionality of the kernel is broken down into separate processes, usually called
@@ -92,6 +96,7 @@ into the kernel image. Conversely, Linux has none of the performance-sapping fea
 curse microkernel design: Everything runs in kernel mode, with direct function invocation—
 not message passing—the modus of communication. Nonetheless, Linux is modular,
 threaded, and the kernel itself is schedulable.
+-->The microkernel approach consists of defining a simple abstraction over the hardware, with a set of primitives or system calls to implement minimal OS services such as memory management, multitasking, and inter-process communication. Other services, including those normally provided by the kernel, such as networking, are implemented in user-space programs, referred to as servers. Microkernels are easier to maintain than monolithic kernels, but the large number of system calls and context switches might slow down the system because they typically generate more overhead than plain function calls. 
 
 A handful of notable differences exist between the Linux kernel and classic
 Unix systems:
