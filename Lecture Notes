@@ -58,6 +58,398 @@ kbuild means, kernel build system
   --->external, dynamic kernel modules(1) 
          --> internal dynamic kernel modules(2)
            -->internal static modules(3)  
+   ->kernel static/dynamic modules do not use
+      user-space development header files
+    -->kernel modules do not use user-space
+       libraries 
+       
+        --->typical kernel modules /code do not 
+        use system call APIs, but system APIs
+          --->system APIs are part of the 
+              kernel space, not user-space
+          --->since these kernel modules'
+          code resides and executes, in 
+          kernel space, there is no point, 
+          in using system call APIs
+          --->these kernel modules use 
+          a different set of services, 
+          not the same services offered, 
+          by system calls
+          -->"system APIs" are used to provide
+          a different set of services to 
+          kernel modules - we will study more
+          --->these system APIs are known as
+              kernel programming interfaces 
+ 
+ ---->for understanding system APIs, we need to 
+     understand respective frame-works 
+ 
+    -->instead, use appropriate "kernel source 
+       tree's header files" - based on the 
+       dev./test kernel version 
+    --->in addition, our kernel modules can 
+        access and use "kernel symbols/system 
+        APIs/ system objects/tables, as per 
+        prescribed  rules of the kernel 
+        sub-systems/kernel components and 
+        their frame-works"
+        --->kernel symbols represent 
+            "system APIs/system objects/
+            tables" ....
+        --->there are specific rules associated, 
+            with kernel symbols - these 
+            are described below 
+--->a typical kernel module's code+data 
+    will have the 
+    following characteristics :
+    --->there will be an init method and 
+        an exit method - these are also 
+        call backs - these are invoked, 
+        as per triggers and registrations - 
+        we need to check their contexts of 
+        execution   
+    --->in addition, it will use one or 
+        more kernel header files
+    --->in addition, will use one or 
+        system objects and private objects
+         --->system objects are defined by 
+             core components/frame-works, 
+             for other kernel modules/ components 
+         --->private objects are defined 
+             specifically, for the local 
+             kernel module  
+    -->will use system tables, for managing 
+       call backs /pointers of call backs
+    --->will provide/register several call backs
+        --->we need to do one or more 
+            registrations 
+    --->in addition, code of a kernel module
+        will use several system APIs, for 
+        services  
+    --->once built and loaded into the 
+        kernel space, most of the code 
+        and data reside passively - 
+        this applies to most kernel modules  
+->we need to create a local development 
+        directory, 
+        which will be used to store the source
+        files and Makefiles(similar to embedded
+        projects),for our external dynamic modules 
+         - this local 
+        directory must not reside inside a 
+        kernel source tree of the development 
+        system - later, we may integrate this 
+        external development directory into the 
+        kernel source tree.
+->in addition, the same local dev. directory 
+        will also store the "external dynamic kernel 
+        module's object file", after the build
+      ->this local dev. directory must contain 
+        a well defined local Makefile script, as per
+        the "requirements of kernel build system"
+        , which is part of the kernel source tree
+--->there are well defined templates, which we 
+    can modify and use - in our case, we will 
+    be using certain standard templates and 
+    modify these, for our external dynamic 
+    kernel modules   
+    
+    --->these Makefiles must be written, 
+           as per strict rules of kbuild 
+           system of kernel source tree(s)
            
+  ->this kernel build system(kbuild) 
+          supplies several 
+          scripts, including Makefile scripts, 
+          in the kernel source tree 
+      -->it is one of the master frame-works, 
+         in the kernel source tree 
+      ->this local directory should contain 
+        a local Makefile script, for an external 
+        dynamic module and one or more 
+        source files - there are additional 
+        Makefile scripts/other scripts, in 
+        a kernel source tree - these are part of 
+        kbuild frame-work of a kernel source 
+        tree --->when we build our external 
+        kernel module(s), the kbuild's scripts, 
+        in the kernel source tree will be 
+        used, along with our local directory's
+        Makefile         
+         ->this external local Makefile of the external 
+        kernel module will be used by the kbuild system 
+      ->in addition, the external kernel module's source 
+        file will be used by the kbuild to build 
+        a "dynamic kernel module object file" ending
+        with *.ko 
+     --->test.c(a kernel module's source file
+                  ---> test.o ---> test.ko
+           --->in this context, *.ko is an 
+               intermediate kernel object file, 
+               that can be loaded into a 
+               compatible loaded kernel's kernel-space
+           --->in this case, *.o intermediate 
+               kernel object file cannot be loaded
+           --->the *.ko will contain certain 
+               extra sections, which will be 
+               needed, for loading - these extra
+               sections will not be present, in 
+               *.o 
+               -->this is based on the kernel version 
+                  and other features
+  
+-->external module source files/local Makefile 
+       need to be 
+       used, along with kernel source tree/kernel 
+       build frame-work//header files
+       of the kernel source tree    
+       -->this job is done, by the command 
+          provided, by  the kernel build system 
+
+->make  -C  <pathtothedevksrctreedir>  M=`pwd` modules
+       --->-C is used point the appropriate kernel 
+           "development source tree" and 
+           use "kernel headers" and 
+           "kbuild system(its scripts)
+            of the kernel source tree" 
+       --->we need to pass the pathname of the 
+           development kernel source tree set-up, 
+           in the earlier procedure, in this 
+           document
+       -->M is used to pass "the path of local 
+          working/development directory of
+          an external kernel 
+          module" 
+          to the "kernel build system/kbuild" 
+             
+          --->we use  M=$(pwd), where we `` 
+              does the command substitution   
+          
+        -->modules keyword is optional, but still pass 
+           modules option  
+-->this command will generate an intermediate 
+           *.o /object file, first  
+        -->after *.o is generated, it will generate 
+          a final kernel 
+          module/ object file, *.ko, 
+          which  is not an executable file/not 
+          a program, but an 
+          "intermediate kernel module object file", 
+          that can be loaded into the kernel space of
+          a compatible loaded Linux kernel image
+          --->when we load this *.ko file into
+              the kernel-space, it will not be
+              loaded/executed, as an active program
+              /process
+          --->it will just be provided kernel 
+              space memory to load code and data, 
+              and certain meta-data, using system 
+              objects
+->ls  -l  *.ko //check, if your local 
+               //kernel module is generated 
+               //Write this comand inside your local development directory where you wrote your make file
+->next, we can load and test our kernel module, 
+       using  "insmod  hello_n3.ko", where insmod is 
+       an admin. system utility --->this will 
+       require sudo -i or su root sessions
+    --->ls -l  /sbin/insmod  
+ -->if loading is successful, the module 
+        will be added, 
+        as a passive entity to the kernel-space
+     -->its services will be available to the 
+        kernel/kernel-space - it is not set-up, 
+        as a process/threads  
+     ->it may fail, if it has been wrongly built or
+       certain resource allocation issues or 
+       lack of administrative privileges/credentials:
+  
+        --->it can be kernel version/configuration  
+            compatibility or other practical 
+            issues
+ -->to check for kernel error messages/diagnostics, 
+        we can use dmesg | less  and look for our 
+        module's errors / messages, in the 
+        kernel diagnostics buffer, in kernel-space
+        --->we cannot use printf() - there is no
+            support - instead, we will be using 
+            printk() , which is not like printf, 
+            but writes to a kernel log buffer - 
+            we can use dmesg utility to read from 
+            the log buffer into user-space and 
+            print on the CLI 
+     
+-->for kernel space modules, most of the errors
+           are kernel messages, not user-space errors/
+           messages - these are added to kernel 
+           diagnostics buffer, not just printed 
+           on the terminal  
+    --->there are further run-time issues, when 
+        we load a kernel module ?? 
+     ->typically, as per the standard rules of the 
+       kernel and developers, a kernel module must 
+       be built for a specific target kernel version/
+       image/configuration - cannot be loaded into 
+       another target kernel version/image/configuration
+     ->use lsmod   | less to check, if our  
+       modules are properly loaded - lsmod is 
+       another system utility
+       --->lsmod can be used to check, if 
+           internal, dynamic kernel modules or 
+           external, dynamic kernel modules 
+           are loaded
+       --->lsmod cannot be used to check, 
+           if an internal, static kernel 
+           module is loaded or unloaded ??
+           -->we need other kernel debugging 
+              techniques - we will discuss 
+              below      
+-->->as part of usage/testing, we can unload the 
+       kernel module/delete the module, using  
+       rmmod  hello_n3.ko (or)
+
+       rmmod  hello_n3  
+
+       -->effectively, the module will be deleted, from 
+          the kernel space - its memory and 
+          other resources will be 
+          freed- we will not be able to get the services 
+          of this module, in kernel-space
+
+--->there can be only one instance of a kernel 
+    module loaded into a specific kernel instance/
+    system-space - meaning, an instance can be 
+    an internal/static or internal/dynamic or 
+    external/dynamic - only one instance  
+   
+    -->check for kernel error messages/diagnostic
+       messages
+          -->refer to dmesg | less will provide the 
+             current set of kernel diagnostic 
+             messages, in the kernel diagnostics
+             buffer  
+             
+--> the external dynamic modules 
+      are modified and rebuilt, but the 
+      kernel image and related files are
+      unaffected - meaning, we do not 
+      rebuild the kernel image/related  files - 
+      we just change/rebuild and test our 
+      external kernel modules' source /binaries     
+      --->in this context, the development kernel 
+       image is just built once, at the begining 
+       of the project, not for every rebuild of 
+       an external kernel module 
+   
+   -->this is the major convenience of using 
+         external modules - easy to build /test /verify 
+         external modules, in a test platform, without 
+         rebuilding the kernel image multiple times 
+  -->-->let us understand, what happens, when an external 
+      module is loaded into the kernel space, using 
+      insmod or another system utility ??? 
+--->all these operations are part of a system call 
+    execution invoked, in insmod system utility 
+      ->first, the system allocates dynamic kernel 
+        memory blocks, for code and data of kernel 
+        module - certain physical memory is allocated, 
+        for kernel-space requirements - these 
+        requirements use physical memory and 
+        logical address-space/segments/pages, 
+        not virtual address-space/virtual memory
+        management 
+      ->next, code and data are copied into the 
+        kernel space memory blocks 
+      ->one or more system objects are allocated, for 
+        the kernel module management - these are
+        not managed as processes - there are treated
+        as kernel modules  
+      ->few more checks are done, for the external module???
+      ->if all the requirements are satisfied, the 
+        system will invoke the init method/call 
+        back  of the this loaded dynamic 
+        kernel module 
+      ->a kernel module is not a program(unconventional 
+        program/programming) - does not have 
+        a main()(unconventional) - 
+        it will have init/exit/other call backs
+        (unconventional programming techniques), 
+        as per requirements - these methods/call backs are
+        executed, in one or more "kernel execution paths", 
+        not as part of a main()/program  
+      ->for instance, refer to hello_n3.c and comments, 
+        specifically refer to init() and exit() methods 
+-->if all is well, our module will loaded and 
+          resident, in the kernel space 
+        ->a typical kernel module will be 
+          "exporting services"
+          or "registering its services", with the system 
+   ->let us understand unloading/deletion of a module  
+
+          ->rmmod  <nameofthemodule>
+
+          ->if the kernel module is 
+            busy(meaning, its services
+            are in use) the system will disallow unloading 
+            of the module/deletion - so, there will be an 
+            error and unloading will fail
+          ->if our module is unused/free, the system 
+            will delete 
+            our module and as part of deletion, following 
+            are done:
+            ->invoke the exit method/entry point/call back
+              of the kernel module 
+            ->once done, free the system objects and 
+            dynamic 
+            memory allocated to this module
+     --->effectively, the module will be deleted   
+     ->in the case of problem 2/assignment 3, we need to 
+      reconfigure/rebuild the 
+      kernel image several times, 
+      if needed - so, ensure only the 
+      required steps are processed 
+
+-->using assignment 3/problem2, we can work, with the 
+     development kernel /kernel source tree/
+     kernel image - we will 
+     be adding static/dynamic modules to  
+     the kernel source tree/kernel/kernel image
+     --->these kernel modules are known as 
+         internal kernel modules - can be 
+         static or dynamic  
+
+
+->actually, in problem 2 of assignment 3, we will 
+      be adding our "kernel modules' source files" and 
+      "related scripts to a project directory", in 
+      the "development kernel source tree"
+--->this is how, we need to add our project's
+    kernel modules to the kernel source tree/
+    kernel image/kernel
+--->as part of this assignment problem, you 
+    will also understand the working of 
+    kbuild and many related build issues  
+         
+->we will be strictly following the rules of 
+       kbuild system of the kernel source tree - 
+       following 
+       is the procedure, as per kbuild system
+       
+       
+       ->first, we need to create a project directory, 
+        in the existing kernel source tree directory, 
+        as per our project requirements 
+      ->in this context, we will be creating the 
+        following project directory - "in the future", 
+        we can change these directories, as per the
+        project set-up  
+          <ksrctreedir>/drivers/char/custom
+
+         
+                         
+               
+        
+        
+        
+      
            
     
