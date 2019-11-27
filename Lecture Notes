@@ -1,0 +1,63 @@
+kbuild means, kernel build system 
+           --->"kbuild system" is part of the 
+               kernel source tree and we will 
+               be using its services, for 
+               building static kernel 
+               images/static kernel modules/
+               dynamic kernel modules
+               --->these are a set of well 
+               defined scripts , as per 
+               certain standard set of 
+               rules 
+          for system-space development, we will be 
+    using kernel source tree header files, but 
+    no system libraries - system libraries are
+    , for user-space only , 
+    system libraries are for user-space only - 
+    these are non-core components 
+ 
+ -->we will be generating new images, after 
+    changes to our add-on modules to 
+    the kernel source tree 
+    
+    -->"An external kernel module resied outside the monolithic kernel image"
+    --->what is a dynamic kernel module ??
+           --->typically, a kernel module, that 
+               can be loaded/unloaded, in a  
+               kernel/kernel-space - 
+               each dynamic kernel module 
+               will have its own object file(*.ko)
+               --->there are system utilities to 
+                   load/unload these kernel 
+                   modules  
+                   why not just have static kernel modules only ??
+     --->there are practical requirements, mainly 
+         used for development and testing 
+          --->what is an "external dynamic kernel module"??
+          -->in the case of "static kernel modules", there is 
+      only one form, which is "internal static 
+      kernel modules/built-in modules", which reside, 
+      in a kernel 
+      source tree - in this context, we must add 
+      kernel modules' source files to the 
+      development kernel source tree - even the 
+      binaries of the static kernel modules 
+      reside, inside a kernel source tree -
+      --->Once development  and testing is done, dynamic modules
+    can be transformed into static kernel 
+    modules, if needed - this is project 
+    specific
+    
+    -->as a developer, we may initially use "external 
+       dynamic modules", before switching to 
+       "internal dynamic modules" or 
+       "internal static modules" 
+    -->--->in summary, following are different forms 
+    of kernel modules 
+
+  --->external, dynamic kernel modules(1) 
+         --> internal dynamic kernel modules(2)
+           -->internal static modules(3)  
+           
+           
+    
