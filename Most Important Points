@@ -1,0 +1,3 @@
+In system space  when we declare any variable for ex. int x=5; in one module.Then in any other modules of system space if we write "extern int x;" then both the x variable uses the same memory!!!!!! i.e they share the memory the reason is the single address space.
+
+
