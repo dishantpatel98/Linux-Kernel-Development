@@ -1,1 +1,47 @@
+Procfs is a internal   kernel static module,there is no  support, for dynamic kernel module, for this component. 
 
+ --->since it is one of the most essential 
+         kernel component, disabling is 
+         unacceptable  
+-->this document describes the architecture and 
+  design of procfs component/subsystem/module
+  
+       this frame-work /sub-system
+       --->exports system APIs and their rules
+       --->provides system objects and their 
+           rules 
+       --->maintains system lists and meta-data
+       --->supports managing call backs  
+
+- procfs is a "special file system resident" 
+  , in main memory/system-space - does not store data/
+  user-data/application-data  - 
+  does manage special files, known as "procfs 
+  files and directories" - 
+  in Unix/Linux language, it is known 
+  as "a pseudo file system/synthetic file system" - 
+  "it does support 
+  meta-data(data used to manage)" , 
+  "not stored file data" - only meta-data
+  is stored, in these file systems, "not actual data" - 
+    - it is a "static kernel module" that is 
+      "registered" with 
+      "VFS layer" - "VFS layer" is connected to 
+      "system call interface layer"
+
+          there is 
+          a virtual file switch(VFS) and 
+          this is linked/registered to
+          system call interface layer
+          
+          procfs component 
+          is registered with VFS layer
+      --->similarly, other system components/ 
+          modules are registered, with procfs
+          layer          
+-->Linux manages to support multiple filesystem types.
+
+The idea behind the Virtual Filesystem is to put a wide range of information in the
+kernel to represent many different types of filesystems;
+          
+          
