@@ -13,7 +13,7 @@ tables to map the memory into a contiguous chunk of the logical address space.
 
 --->For the most part, only hardware devices require physically contiguous memory allo-
 cations. On many architectures, hardware devices live on the other side of the memory
-management unit and, thus, do not understand virtual addresses. Consequently, any
+management unit and, thus, do not understand virtual addresses.But they do use MMU. Consequently, any
 regions of memory that hardware devices work with must exist as a physically contiguous
 block and not merely a virtually contiguous one. Blocks of memory used only by soft-
 ware—for example, process-related buffers—are fine using memory that is only virtually
