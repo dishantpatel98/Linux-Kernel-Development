@@ -10,3 +10,26 @@ the pages are physically contiguous (and virtually contiguous).The vmalloc() fun
 ensures only that the pages are contiguous within the virtual address space. It does this by
 allocating potentially noncontiguous chunks of physical memory and “fixing up” the page
 tables to map the memory into a contiguous chunk of the logical address space.
+
+--->For the most part, only hardware devices require physically contiguous memory allo-
+cations. On many architectures, hardware devices live on the other side of the memory
+management unit and, thus, do not understand virtual addresses. Consequently, any
+regions of memory that hardware devices work with must exist as a physically contiguous
+block and not merely a virtually contiguous one. Blocks of memory used only by soft-
+ware—for example, process-related buffers—are fine using memory that is only virtually
+contiguous. In your programming, you never know the difference.All memory appears to
+the kernel as logically contiguous.
+
+--->Despite the fact that physically contiguous memory is required in only certain cases,
+most kernel code uses kmalloc() and not vmalloc() to obtain memory. Primarily, this is
+for performance
+
+-->The vmalloc() function, to make nonphysically contiguous pages con-
+tiguous in the virtual address space, must specifically set up the page table entries.Worse,
+pages obtained via vmalloc() must be mapped by their individual pages (because they
+are not physically contiguous), which results in much greater TLB 4 thrashing than you see
+when directly mapped memory is used. Because of these concerns, vmalloc() is used
+only when absolutely necessary—typically, to obtain large regions of memory. 
+
+--->For example, when modules are dynamically inserted into the kernel, they are loaded into memory
+created via vmalloc().
