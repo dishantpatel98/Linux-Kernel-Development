@@ -1,3 +1,12 @@
 In system space  when we declare any variable for ex. int x=5; in one module.Then in any other modules of system space if we write "extern int x;" then both the x variable uses the same memory!!!!!! i.e they share the memory the reason is the single address space.
 
 
+-->The vmalloc() function works in a similar fashion to kmalloc() , except it allocates
+memory that is only virtually contiguous and not necessarily physically contiguous.This
+is how a user-space allocation function works:The pages returned by malloc() are con-
+tiguous within the virtual address space of the processor, but there is no guarantee that
+they are actually contiguous in physical RAM.The kmalloc() function guarantees that
+the pages are physically contiguous (and virtually contiguous).The vmalloc() function
+ensures only that the pages are contiguous within the virtual address space. It does this by
+allocating potentially noncontiguous chunks of physical memory and “fixing up” the page
+tables to map the memory into a contiguous chunk of the logical address space.
