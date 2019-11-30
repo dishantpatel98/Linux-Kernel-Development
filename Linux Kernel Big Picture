@@ -615,6 +615,189 @@ at ioctl() as an example of what not to do.
 call should have a clean and simple interface with the smallest number of arguments possi-
 ble.The semantics and behavior of a system call are important; they must not change,
 because existing applications will come to rely on them.
+------------------------------------------------------------------------------------------------------------------
+########Ch Memory Management 
+--->Memory allocation inside the kernel is not as easy as memory allocation outside the
+kernel.
+--->The kernel treats physical pages as the basic unit of memory management.Although the
+processor’s smallest addressable unit is a byte or a word, the memory management unit
+(MMU, the hardware that manages memory and performs virtual to physical address
+translations) typically deals in pages.Therefore, the MMU maintains the system’s page
+tables with page-sized granularity (hence their name). In terms of virtual memory, pages
+are the smallest unit that matters.Many architectures even support multiple page sizes.
+
+
+-->The kernel represents every physical page on the system with a struct page structure.
+This structure is defined in <linux/mm_types.h> . I’ve simplified the definition, removing
+two confusing unions that do not help color our discussion of the basics:
+
+struct page {
+unsigned long flags;
+atomic_t _count;
+atomic_t _mapcount;
+unsigned long private;
+struct  address_space  *mapping;
+pgoff_t index;
+struct list_head lru;
+void *virtual;
+};
+1)The flags field stores the status of the page. Such
+flags include whether the page is dirty or whether it is locked in memory. Bit flags repre-
+sent the various values, so at least 32 different flags are simultaneously available.The flag
+values are defined in <linux/page-flags.h> 
+
+2)The _count field stores the usage count of the page—that is, how many references
+there are to this page.When this count reaches negative one, no one is using the page, and
+it becomes available for use in a new allocation. Kernel code should not check this field
+directly but instead use the function page_count() , which takes a page structure as its
+sole parameter.Although internally _count is negative one when the page is free,
+page_count() returns zero to indicate free and a positive nonzero integer when the page
+is in use.
+
+
+3)The virtual field is the page’s virtual address. Normally, this is simply the address of
+the page in virtual memory. Some memory (called high memory) is not permanently
+mapped in the kernel’s address space. In that case, this field is NULL , and the page must be
+dynamically mapped if needed.
+
+#####Zones
+--->Because of hardware limitations, the kernel cannot treat all pages as identical. Some pages,
+because of their physical address in memory, cannot be used for certain tasks. Because of
+this limitation, the kernel divides pages into different zones.The kernel uses the zones to
+group pages of similar properties. In particular, Linux has to deal with two shortcomings
+of hardware with respect to memory addressing:
+
+1)Some hardware devices can perform DMA (direct memory access) to only certain
+memory addresses.
+2)Some architectures can physically addressing larger amounts of memory than they
+can virtually address. Consequently, some memory is not permanently mapped into
+the kernel address space.
+
+Because of these constraints, Linux has four primary memory zones:
+
+1)ZONE_DMA —This zone contains pages that can undergo DMA.
+2)ZONE_DMA32 —Like ZOME_DMA , this zone contains pages that can undergo DMA.Unlike ZONE_DMA , these pages are accessible only by 32-bit devices. On some archi-
+tectures, this zone is a larger subset of memory.
+3)ZONE_NORMAL —This zone contains normal, regularly mapped, pages.
+4)ZONE_HIGHMEM —This zone contains “high memory,” which are pages not permanently mapped into the kernel’s address space.
+
+These zones, and two other, less notable ones, are defined in <linux/mmzone.h>.
+Each zone is represented by struct zone{ ......};.
+
+##kmalloc()
+-->The kmalloc() function’s operation is similar to that of user-space’s familiar malloc()
+routine, with the exception of the additional flags parameter.The kmalloc() function is
+a simple interface for obtaining kernel memory in byte-sized chunks. If you need whole
+pages, the previously discussed interfaces might be a better choice. For most kernel alloca-
+tions, however, kmalloc() is the preferred interface.
+The function is declared in <linux/slab.h> :
+void * kmalloc(size_t size, gfp_t flags)
+
+The function returns a pointer to a region of memory that is at least size bytes in
+length. 3 The region of memory allocated is physically contiguous. On error, it returns
+NULL . Kernel allocations always succeed, unless an insufficient amount of memory is avail-
+able.Thus, you must check for NULL after all calls to kmalloc() and handle the error
+appropriately.
+
+##vmalloc()
+-->The vmalloc() function works in a similar fashion to kmalloc() , except it allocates
+memory that is only virtually contiguous and not necessarily physically contiguous.This
+is how a user-space allocation function works:The pages returned by malloc() are con-
+tiguous within the virtual address space of the processor, but there is no guarantee that
+they are actually contiguous in physical RAM.The kmalloc() function guarantees that
+the pages are physically contiguous (and virtually contiguous).The vmalloc() function
+ensures only that the pages are contiguous within the virtual address space. It does this by
+allocating potentially noncontiguous chunks of physical memory and “fixing up” the page
+tables to map the memory into a contiguous chunk of the logical address space.
+
+
+-->For the most part, only hardware devices require physically contiguous memory allo-
+cations. On many architectures, hardware devices live on the other side of the memory
+management unit and, thus, do not understand virtual addresses. Consequently, any
+regions of memory that hardware devices work with must exist as a physically contiguous
+block and not merely a virtually contiguous one. Blocks of memory used only by soft-
+ware—for example, process-related buffers—are fine using memory that is only virtually
+contiguous. In your programming, you never know the difference.All memory appears to
+the kernel as logically contiguous.
+
+-->Despite the fact that physically contiguous memory is required in only certain cases,
+most kernel code uses kmalloc() and not vmalloc() to obtain memory. Primarily, this is
+for performance.
+
+
+-->The vmalloc() function, to make nonphysically contiguous pages con-
+tiguous in the virtual address space, must specifically set up the page table entries.Worse,
+pages obtained via vmalloc() must be mapped by their individual pages (because they
+are not physically contiguous), which results in much greater TLB 4 thrashing than you see
+when directly mapped memory is used. Because of these concerns, vmalloc() is used
+only when absolutely necessary—typically, to obtain large regions of memory. 
+
+--->For example, when modules are dynamically inserted into the kernel, they are loaded into memory
+created via vmalloc().
+
+The vmalloc() function is declared in <linux/vmalloc.h> and defined in
+mm/vmalloc.c . Usage is identical to user-space’s malloc() :
+
+void * vmalloc(unsigned long size)
+
+
+-->The TLB (translation lookaside buffer) is a hardware cache used by most architectures to cache the
+mapping of virtual addresses to physical addresses. This greatly improves the performance of the sys-
+tem, because most memory access is done via virtual addressing.
+
+To free an allocation obtained via vmalloc() , use
+void vfree(const void *addr);
+
+
+
+####Slab layer
+
+-->Allocating and freeing data structures is one of the most common operations inside any
+kernel.To facilitate frequent allocations and deallocations of data, programmers often
+introduce free lists.A free list contains a block of available, already allocated, data structures.
+When code requires a new instance of a data structure, it can grab one of the structures
+off the free list rather than allocate the sufficient amount of memory and set it up for the
+data structure. Later, when the data structure is no longer needed, it is returned to the free
+list instead of deallocated. In this sense, the free list acts as an object cache, caching a fre-
+quently used type of object.
+
+-->One of the main problems with free lists in the kernel is that there exists no global
+control.When available memory is low, there is no way for the kernel to communicate
+to every free list that it should shrink the sizes of its cache to free up memory.The ker-
+nel has no understanding of the random free lists at all.To remedy this, and to consoli-
+date code, the Linux kernel provides the slab layer (also called the slab allocator).The slab
+layer acts as a generic data structure-caching layer.
+
+What is slab?
+-->Slab can be defined as as the collection of contiguous pages.
+-->Cache means coolection of slabs.
+So slab allocation algorithm uses cache in order to store the kernel object.
+Kernel object can be File Descriptor,prcess descriptor  semaphore etc..
+
+
+The slab layer divides different objects into groups called caches, each of which stores a
+different type of object.There is one cache per object type. For example, one cache is for
+process descriptors (a free list of task_struct structures), whereas another cache is for
+inode objects ( struct inode) . Interestingly, the kmalloc() interface is built on top of
+the slab layer, using a family of general purpose caches.
+
+In linux kernel slab can be allocated in three different states:
+1)Free state : All the pages in the slab are free.
+2)used State :All pages in the slab are used
+3)partial State:Some pages in the  slab  are free.
+
+
+So whenever kernel request the memory for any type of kernel object then slab allocator algorithm first try to allocate
+the memory in the partial slab if  the memory is insufficient in the partial slab iot try to allocates the memory in 
+empty slab. If empty slab also doesnt satisfies the memory requirement then new slab is allocated.
+Each cache may consist of multiple slabs.
+The slab layer attempts to leverage several basic tenets:
+
+-->Frequently used data structures tend to be allocated and freed often, so cache them.
+
+
+
+
 -------------------------------------------------------------------------------------------------------------------
 Chapter:Interrupt
 
