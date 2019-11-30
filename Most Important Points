@@ -33,3 +33,4 @@ only when absolutely necessary—typically, to obtain large regions of memory.
 
 --->For example, when modules are dynamically inserted into the kernel, they are loaded into memory
 created via vmalloc().
+-->Slab allocator is used for only system space and hot for used space.becuase its is insufficient for user space.
