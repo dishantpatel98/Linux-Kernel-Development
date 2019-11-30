@@ -43,5 +43,106 @@ Procfs is a internal   kernel static module,there is no  support, for dynamic ke
 
 The idea behind the Virtual Filesystem is to put a wide range of information in the
 kernel to represent many different types of filesystems;
+
+The Linux virtual file system or virtual file system generally is a layer that sits on the top of your actual file system which allows the user to access different types of file systems, you can think of virtual file system as an interface between the kernel and the actual file system.
+The proc file system is a virtual file system which is mounted on /proc directory.
+
+There is no real file system exists on /proc, it’s a virtual layer that is used for dealing with the kernel functionalities.
+
+For example, to get the processor specifications, type the following command:
+
+$ cat /proc/cpuinfo
+
+This is a very powerful and easy way to query Linux kernel.
+
+Notice that if you check the size of the file in /proc directory, you will find that all file sizes are 0, because as we said they don’t exist on the disk.
+
+When you type cat /proc/cpuinfo command, a file is dynamically created to show you the CPU info.
+
+The only file that has a size in /proc directory is /proc/kcore file, which shows the RAM content. Actually, this file isn’t occupying any space on the disk.
+
+Writing to Proc Files
+
+As we’ve seen, we can read the content of proc files, but some of them are writable, so we can write to them to change some functionality.
+
+For example, this  /proc/sys/net/ipv4/ip_forward file controls IP forwarding in case you have multiple network cards.
+
+You can change the value of this file like this:
+
+$ echo "1" > /proc/sys/net/ipv4/ip_forward
+
+Keep in mind that when you change any file or value under /proc directory there is no validation of what you are doing, you may crash your system if you type a wrong setting.
+
+The previous modification to the /proc/sys/net/ipv4/ip_forward entry will not survive after rebooting since you are not writing to a file, this is a virtual file system, means change happens to the memory.
+
+If you list the files in /proc directory, you’ll notice a lot of directories which have numeric names, these directories contain information about the running processes and the numeric value is the corresponding process ID.
+
+You can check the consumed resources by a specific process from these directories.
+
+If you take a look at the folder named 1, it belongs to the init process or systemd (like CentOS 7) which is the first process runs When Linux starts.
+
+$ ls -l /proc/1
+The /proc/1/exe  file is a symbolic link to  /lib/systemd/systemd binary or /sbin/init in other systems that use init binary.
+
+The Virtual Filesystem (also known as Virtual Filesystem Switch or VFS) is a kernel
+software layer that handles all system calls related to a standard Unix filesystem. Its
+main strength is providing a common interface to several kinds of filesystems.
+
+The VFS is an abstraction layer between the application program and the filesystem implementations
+For instance, let’s assume that a user issues the shell command:
+ 
+$ cp /floppy/TEST /tmp/test
+
+where /floppy is the mount point of an MS-DOS diskette and /tmp is a normal Second
+Extended Filesystem (Ext2) directory. The VFS is an abstraction layer between the
+application program and the filesystem implementations (see Figure 12-1(a)).
+Therefore, the cp program is not required to know the filesystem types of /floppy/
+TEST and /tmp/test.
+What is Metadata?
+-->Metadata is "data that provides information about other data".[1] In short, it's data about data. 
+
+
+Instead, cp interacts with the VFS by means of generic system calls known to anyone who has done Unix programming.
+
+file IO/IO  system call 
+      APIs of system library can be used to 
+      access procfs layer and its services, 
+      using layering and modularity 
+
+- in terms of services, "procfs supports 
+      procfs directories and files" - mainly, 
+      "procfs files are the main services" - 
+      so, "a component/module can register 
+      with procfs to request for a one or 
+      more procfs files to created and 
+      managed on behalf the kernel component/
+      module"
+- for the procfs services/files to be used, 
+      "VFS/system call interface layer / system 
+      library/file IO system calls" are needed - 
+      specifically, VFS is needed to support 
+      files /active files , for procfs services
+
+--->applications/processes/threads
+      ------>file IO/ IO system calls(system library) 
+              ----->system call interface layer
+                    ---->VFS layer
+                         ------>procfs 
+                                 ---> a specific 
+                                      kernel component/
+                                      modulei
+
+   ---->this specific kernel modulei can 
+         be our custom module, as well - 
+         say, it can be a device driver or
+         another embedded sw module 
+ 
+  we will 
+     be seeing certain core components, like
+     buddy system allocators/sub-system and 
+     slab-allocators/sub-system will using 
+     the services of procfs,
+ 
+
           
-          
+
