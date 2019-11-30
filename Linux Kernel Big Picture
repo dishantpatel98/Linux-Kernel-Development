@@ -751,7 +751,7 @@ void vfree(const void *addr);
 
 
 ####Slab layer
-
+-->-->Slab allocator is used for only system space and not for used space.becuase its is insufficient for user space.
 -->Allocating and freeing data structures is one of the most common operations inside any
 kernel.To facilitate frequent allocations and deallocations of data, programmers often
 introduce free lists.A free list contains a block of available, already allocated, data structures.
@@ -760,6 +760,12 @@ off the free list rather than allocate the sufficient amount of memory and set i
 data structure. Later, when the data structure is no longer needed, it is returned to the free
 list instead of deallocated. In this sense, the free list acts as an object cache, caching a fre-
 quently used type of object.
+
+To allocate memory in system space we have two approach :
+1)Buddy Allocator
+2)Slab Allocator
+
+1)Buddy --->In buddy allocator memory is allocated int he power of 2.
 
 -->One of the main problems with free lists in the kernel is that there exists no global
 control.When available memory is low, there is no way for the kernel to communicate
