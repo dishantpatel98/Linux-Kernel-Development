@@ -143,6 +143,88 @@ file IO/IO  system call
      slab-allocators/sub-system will using 
      the services of procfs,
  
+- procfs mainly supports special files/pseudo files, 
+      known as procfs files - these do not 
+      store data/but store meta-data - 
+      rather, they maintain 
+      certain system object(s)(meta-data) and 
+      a set of call backs - these system objects/
+      meta-data and call backs enable a  
+      procfs file to export system data 
+      of kernel components/modules or 
+      custom modules/drivers to the user-space   
+      - the system data is typically exported
+      from the kernel modules, that register
+      with procfs
+    - in most cases, procfs files will be 
+      readonly - meaning, just export data 
+      from kernel modules/components to 
+      user-space - in certain cases, they 
+      may be read/write, where we can update 
+      data from user-space to the system space
+     --->procfs files are created, using 
+           system APIs of procfs and system objects
+      
+     ---->in many cases, we need to create one or 
+     more project specific procfs directories
+     and under these procfs directories, we
+     will create one or more project files
+     
+---->as part of the init method, the first 
+     system API is proc_mkdir(p1, p2); 
+        --->p1 is the name of the new procfs 
+            directory 
+        --->p2 will be the pointer to a 
+            struct proc_dir_entry{} system object of 
+            the parent procfs directory 
+---->as part of the init method, the first 
+     system API is proc_mkdir(p1, p2); 
+        --->p1 is the name of the new procfs 
+            directory 
+        --->p2 will be the pointer to a 
+            struct proc_dir_entry{} system object of 
+            the parent procfs directory 
+--->a struct proc_dir_entry{} object is set-up 
+    , for every procfs directory and procfs file 
+    created - this system object maintains 
+    meta-data of any procfs directory instance 
+    or procfs file instance 
+refer to create_proc_entry()
+     or related system API - this system API and 
+     other related system APIs are exported by 
+     procfs layer/module - exporting is a kernel 
+     technique due to which dynamic modules 
+     can access services/system APIs of kernel 
+     modules/components
+--->in our context, our custom dynamic module
+         will be accessing system APIs of 
+         procfs layer and other such components  
+- internally, this system API will create a
+     system object, which will be representing 
+     the procfs file - at the kernel level, this 
+     system object is the one really representing 
+     this procfs file, but in user-space we will 
+     be seeing an equivalent pathname/file name - the 
+     object is of the 
+             type struct proc_dir_entry{}
+--->in the system-space, procfs files/directories
+    are set-up, as system-objects and managed, 
+    but in the user-space, procfs files/directories
+    are exported, as file-names/path-names 
+    
+    --->how are these mapped ?? how are these
+        linked ?? 
+         --->VFS does a major job, in 
+             mapping/linking such entities 
+         --->VFS does such linking/mapping 
+             jobs, for other file-systems/
+             directories/files, as well     
 
-          
-
+   - in the procfs layer/module, every file 
+     and directory is represented, using 
+     struct proc_dir_entry{} object - all 
+     struct proc_dir_entry{} objects of a 
+     set of files under a directory will be
+     managed, in the struct proc_dir_entry{}
+     of the parent procfs directory - this 
+     set-up/hierarchy  is part of the frame-work
