@@ -228,3 +228,44 @@ refer to create_proc_entry()
      managed, in the struct proc_dir_entry{}
      of the parent procfs directory - this 
      set-up/hierarchy  is part of the frame-work
+
+   - ret = create_proc_entry(p1,p2,p3); 
+
+     -->p1 is just the file name of our 
+        new procfs file 
+
+     -->p2 provides multiuser access permissions 
+        to the owner/group/others - in our 
+        case, we will typically allow th e
+        owner/root user to read the procfs file
+        - no other access permissions are 
+        provided  
+             -->0x400 ----ok
+             -->0x444 ----???
+
+     -->p3 should be the ptr to 
+        struct proc_dir_entry{} of the 
+        parent directory of the new file - 
+        we can select - if we pass NULL, 
+        /proc will be the parent directory 
+        - this is the default parent 
+          directory
+
+
+ -->ret value will be ptr to the system 
+         object/struct proc_dir_entry{} of the 
+         newly created procfs file - if there
+         is a failure, will return NULL
+         --->this return value is the handle 
+         to the newly created procfs file and 
+         we will be using it, in system-space 
+         --->if there is a failure, we must 
+         return a -ve value, in init code - 
+         this will notify the insmod utility 
+         and it will abort the loading of this 
+         module - in this context, most conventional 
+         approach is to return -EINVAL
+         --->in the user-space insmod will 
+             print "invalid parameters" 
+
+
