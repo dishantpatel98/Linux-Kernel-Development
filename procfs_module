@@ -269,3 +269,21 @@ refer to create_proc_entry()
              print "invalid parameters" 
 
 
+--->typically, system APIs are re-entrant 
+     and we need to pass parameters, accordingly 
+ --->if we are coding call backs, we need to 
+     honour the re-entrancy rules of these 
+     call backs, as per the frame-works       
+          -->most of the kernel methods/system 
+             APIs/call backs are re-entrant 
+             methods - in this context, what do 
+             we mean, by a re-entrant kernel 
+             method/system API/call back  ??  
+             -->this means, if there are multiple
+                kernel execution paths of multiple 
+                process/thread contexts executing 
+                concurrently, they can access 
+                the same reentrant kernel system API/
+                method/call back, without 
+                any protection lock  
+
