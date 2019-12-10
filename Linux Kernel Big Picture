@@ -1,23 +1,28 @@
 The operating system is considered the parts of the system
 responsible for basic use and administration.This includes the kernel and device drivers,
 boot loader, command shell or other user interface, and basic file and system utilities.
-The basics of a Linux system are the kernel, C library, toolchain, and basic system utilities, such as a login process and shell.
+The basics of a Linux system are the kernel, C library, toolchain, and basic system utilities, 
+such as a login process and shell.
 
-The user interface is the outer-most portion of the operating system, the kernel is the innermost. It is the core internals;
+The user interface is the outer-most portion of the operating system, the kernel is the innermost. 
+It is the core internals;
 the software that provides basic services for all other parts of the system, manages hard-
 ware, and distributes system resources.The kernel is sometimes referred to as the
 supervisor, core, or internals of the operating system.
 
-Typical components of a kernel are interrupt handlers to service interrupt requests, a scheduler to share processor time
+Typical components of a kernel are interrupt handlers to service interrupt requests,
+a scheduler to share processor time
 among multiple processes, a memory management system to manage process address
 spaces, and system services such as networking and interprocess communication.
 
 Modern systems with protected memory management units, the kernel typically resides in
 an elevated system state compared to normal user applications.This includes a protected
-memory space and full access to the hardware.This system state and memory space is collectively referred to as kernel-space.
+memory space and full access to the hardware.
+This system state and memory space is collectively referred to as kernel-space.
 Conversely, user applications execute in user-space.
 
-When executing kernel code, the system is in kernel-space executing in kernel mode.When running a regular process, the system is in user-space executing in user mode.
+When executing kernel code, the system is in kernel-space executing in kernel mode.
+When running a regular process, the system is in user-space executing in user mode.
 
 Applications running on the system communicate with the kernel via system calls.
 An application typically calls functions in a library—for example, the C
