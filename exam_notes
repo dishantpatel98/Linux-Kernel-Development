@@ -1,0 +1,3 @@
+-->ioremap() function is used to map the physical addres of an I/O device to the kernel virtual address.
+Kernel creates a page table i.e mapping of virtual address to the physical address requested.
+When we do iounmap() this mapping is destroyed.
